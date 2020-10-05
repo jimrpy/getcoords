@@ -1,0 +1,38 @@
+---
+title: "Get_WGS84_Coordinates"
+auther: "Jinming LI"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get_WGS84_Coordinates}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(getcoords)
+
+df <- geocode(location = sample_data)
+
+```
+
+```{r map, fig.width=7.3}
+library(leaflet)
+
+leaflet() %>% 
+  addProviderTiles(provider = providers$OpenStreetMap) %>% 
+  addCircleMarkers(data = df, 
+                   lng = ~lon, 
+                   lat = ~lat, 
+                   radius = 0.5, 
+                   color = "red",
+                   popup = ~loc.input
+                  )
+
+```
