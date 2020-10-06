@@ -75,15 +75,15 @@ This is a real scenario, hard work for conventional methods to get the real GPS 
 
 ```{r example wgs84}
 df.new <- df %>% 
-  mutate(latlon = map(.x = location, .f = ~geocode(.x))) %>% 
-  unnest(latlon) %>% 
+  dplyr::mutate(latlon = map(.x = location, .f = ~geocode(.x))) %>% 
+  tidyr::unnest(latlon) %>% 
   dplyr::select(-location)
 
 df.new %>% 
   DT::datatable(data = .,  caption = "example locations with WGS84 coordinates")
 ```
 
-The coordinates may not be all correct, the reason is that the location you input is not standard. The good location should like such pattern `province``county``township``village`.
+The coordinates may not be all correct, the reason is that the location you input is not standard. The good location should like such pattern `province county township village`.
 
 
 # Interactive map with locations
