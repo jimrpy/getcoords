@@ -1,7 +1,7 @@
 Package: getcoords
 Type: Package
 Title: Get Real Coordinates
-Version: 0.1.099
+Version: 0.1.1
 Author: Jinming LI
 Maintainer: Jinming LI <lijinming@cahec.cn>
 Description: To get the real coordinates(lon, lat) from a specified location.
@@ -21,6 +21,7 @@ Suggests:
     knitr,
     rmarkdown,
     leaflet,
-    utils
+    utils,
+    DT
 Depends: 
     R (>= 2.10)

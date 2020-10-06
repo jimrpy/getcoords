@@ -1,56 +1,95 @@
 ---
 title: "Get_WGS84_Coordinates"
-auther: "Jinming LI"
 output: rmarkdown::html_vignette
+date: "`r Sys.Date()`"
 vignette: >
   %\VignetteIndexEntry{Get_WGS84_Coordinates}
   %\VignetteEngine{knitr::rmarkdown}
-  %\usepackage[UTF-8]{inputenc}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-## load packages
-```{r setup, message = FALSE}
-library(getcoords)
-require(magrittr)
-require(DT)
+# Introduction
+
+Usually, it's not convenient to get the real latlon geocode [(wgs84, which is standard for GPS)](https://earth-info.nga.mil/GandG/update/index.php?dir=wgs84&action=wgs84) of a location with Chinese characters, especially for large amount of locations.
+
+Here is a method to retrieve the coordinates of massive locations by [amap api](https://lbs.amap.com/dev/), and convert to the real GPS coordinates, which is easy for future geography usage.
+
+# Install package
+
+With the following code, you can install this package.
+```{r install, eval=FALSE}
+remotes::install_github("jimrpy/getcoords")
 ```
 
-## load example file
-```{r example-raw}
+There are some other packages required, `dplyr`, `tidyr`, `purrr`, `stringr`, `jsonlite`, `tibble`, if not installed before, install now with `install.packages(c("pkg1", "pkg2",...))`.
+
+## Get a amap API key
+
+This function depends on the webservice of [amap api](https://lbs.amap.com/dev/), a valid key is a must before using it. For registered user, the permission is 6,000 locations/day; for validated personal developer, the permission is 300,000 locations/day. 
+
+Use `usethis::edit_r_environ()` to edit the R environment file. For example  
+`key_amap_tmp = "Yourkey"`  
+
+**Restart** `R`, check whether the key is installed in `Rstudio` Console  
+`Sys.getenv("key_amap_tmp")`
+If the result matches your key chain, all is ok... 
+
+Congratulations!!! Go ahead...
+
+## Load package
+```{r setup}
+library(getcoords)
+library(magrittr)
+library(DT)
+library(tidyr)
+library(dplyr)
+library(purrr)
+library(leaflet)
+```
+
+# Example locations
+Here are 60 random company locations with Chinese characters in a `data.frame`, you can handle as many locations as you `amap key` permission.
+```{r example-raw, echo=FALSE}
 set.seed(1234)
 file = system.file("extdata", "example_locations.csv", package = "getcoords")
-df = utils::read.csv(file = file)
-df.new = df %>%
-  dplyr::sample_n(size = 60) 
+df = read.csv(file = file)
+df= df %>%
+ sample_n(size = 60) 
 ```
 
-## Show example locations
 ```{r table-raw-data}
-DT::datatable(data = df.new, caption = "example locations")
+DT::datatable(data = df)
 ```
 
-## Get the real coordinates(wgs84)
+# Get the real GPS coordinates
+This is a real scenario, hard work for conventional methods to get the real GPS coordinates. With this package, you can use `geocode` function to finish in minutes.
+
 ```{r example wgs84}
-df.new <- df.new %>% 
-  dplyr::mutate(latlon = purrr::map(.x = location, .f = ~geocode(.x))) %>% 
-  tidyr::unnest(latlon) %>% 
-  dplyr::select(-loc.input)
+df.new <- df %>% 
+  mutate(latlon = map(.x = location, .f = ~geocode(.x))) %>% 
+  unnest(latlon) %>% 
+  dplyr::select(-location)
 
 df.new %>% 
-  DT::datatable(data = ., caption = "example locations with WGS84 coordinates")
+  DT::datatable(data = .,  caption = "example locations with WGS84 coordinates")
 ```
 
-## Plot the points on map with leaflet for activation
-```{r map, fig.width=7.3}
-library(leaflet)
+The coordinates may not be all correct, the reason is that the location you input is not standard. The good location should like such pattern `province``county``township``village`.
 
+
+# Interactive map with locations
+
+Now you can plot a attractive map, enjoy it!!!
+```{r map, fig.width=7.3}
 leaflet() %>% 
   addProviderTiles(provider = providers$OpenStreetMap) %>% 
   addCircleMarkers(data = df.new, 
@@ -58,7 +97,6 @@ leaflet() %>%
                    lat = ~lat, 
                    radius = 0.5, 
                    color = "red",
-                   popup = ~location
+                   popup = ~loc.input
                   )
-
 ```
